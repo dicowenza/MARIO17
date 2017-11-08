@@ -22,6 +22,20 @@ void map_new (unsigned width, unsigned height)
     map_set (width - 1, y, 1); // Wall
   }
 
+  /*char * recuperer_ligne(int fichier){
+	char ligne[1024]; // on crée un tableau de 1024 car il y a au maximum 1024 caractère par ligne
+	int i=0;
+	int lecture:
+	while(i<1024 && (lecture=read(fd,buffer+i,1))>0){ // tant qu'on a pas lu toute la ligne et qu'on peut encore lire 
+		if (buffer[i]== '\n'){// si on arrive à la "fin" d'une ligne ( saut de ligne ) 
+			buffer[i]='0'; // fin de ligne
+			break;//on sort de la boucle , ça ne sert à rien de lire vu qu'il n'y a plus rien
+		}
+		i+=n;
+	}*/
+	
+
+
   map_object_begin (8);
 
   // Texture pour le sol
@@ -131,9 +145,9 @@ void map_save (char *filename)
   for(int y=0;y<hauteur;y++){
 	for(int x=0;x<largeur;x++){
 		if(type=map_get(x,y) != MAP_OBJECT_NONE){
-			printf("%d\t",x);// sauvegarde x
-			printf("%d\t",y);// sauvegarde y
-			printf("%d",type);
+			printf("%d\t",x);// sauvegarde de la coordonnée x
+			printf("%d\t",y);// sauvegarde de la coordonnée y
+			printf("%d",type); // sauvegarde du type d'objet
 			printf("\n");
 		}
 	}
@@ -159,7 +173,6 @@ void map_load (char *filename)
  unsigned int largeur , hauteur , nb_objet ;
  int lecture;
  lecture = read(chargement,&largeur,sizeof(unsigned int));
- printf("%u est la largeur",&nb_objet);
  if (lecture < 0 ){
 	fprintf(stderr,"Erreur lors de la lecture de la largeur");
  }
@@ -168,10 +181,58 @@ void map_load (char *filename)
 	fprintf(stderr,"Erreur lors de la lecture de la hauteur");
  }
  lecture = read(chargement,&nb_objet,sizeof(unsigned int));
-  printf("%u est la largeur",nb_objet);
  if (lecture < 0 ){
 	fprintf(stderr,"Erreur lors de la lecture du nombre d'objet");
  }
+  
+ //On alloue ensuite la carte suivant les dimensions
+ map_allocate(largeur,hauteur);
+
+ //On charge ensuite les différents objets de la carte avec la fonction map_object_begin();
+ map_object_begin(nb_objet);
+ 
+ //il faut donc récupérer le chemin de l'image , son nombre de frame , ses caractéristiques ( solidité , destructible , generateur , collectable .... )
+		// a l'aide de la fonction strtok qui permet de séparer une chaine de caractère à l'aide de séparateur , \t par exemple 
+ char * ligne;
+ for(int i=0;i<nb_objet;i++){
+ 	ligne=getline(chargement,ligne); // permeet de récupérer une ligne de code du fichier chargement et de la stocker dans la variable ligne 
+	char * nom=strtok(ligne,"\t");// on " casse la chaîne " pour séparer chaque donnée grâce aux tabulations
+	char * frames=strtok(NULL,"\t"); 
+	char * solidit=strtok(NULL,"\t");
+	char * destruction= strtok(NULL,"\t");
+	char * collectable=strtok(NULL,"\t");
+	char * generator=strtok(NULL,"\t");
+
+	int flags;
+
+	// il faut vérifier que la chaine de caractère récupérer precedemment correspond à une chaine de caractère valide !
+	flags|=solidit;
+
+	if(strcmp(destruction,"destructible")){
+		flags |= MAP_OBJECT_DESTRUCTIBLE;// on rajoute a flags le parametre MAP_OBJECT_DESTRUCTIBLE
+	}
+	if(strcmp(collectable,"collectible")){
+		flags |= MAP_OBJECT_COLLECTIBLE;// on rajoute a flags le parametre MAP_OBJECT_COLLECTIBLE
+	}
+	if(strcmp(destruction,"generator")){
+		flags |= MAP_OBJECT_GENERATOR;// on rajoute a flags le parametre MAP_OBJECT_GENERATOR
+	}
+
+	// a la fin on aura lu tout ce qu'il faut pour pouvoir ajouter l'objet dans la carte !
+	int frame=atoi(frames); // ne pas oublier de convertir la chaine de caractère en entier !
+	map_object_add(nom,frame,flags);
+ }
+ map_object_end();
+
+ //Il ne reste plus qu'à créer les objets sur la carte
+
+
+	
+ 
+
+ 
+
+ 
 
   
 }

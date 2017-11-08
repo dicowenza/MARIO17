@@ -62,19 +62,19 @@ void map_save (char *filename)
   
 
   //Il faut ensuite récupérer les dimensions de la carte , on choisit unsigned int car on a pas besoin des nombres négatifs du int 
-  unsigned int largeur=map_width(); // largeur de la map
+  int largeur=map_width(); // largeur de la map
   unsigned int hauteur=map_height(); //hauteur de la map
   unsigned int nb_objet=map_objects();
   int wr;
   
   // La même chose en 3 lignes
-  printf("%u\t",largeur);
-  printf("%u\t",hauteur);
-  printf("%u\n",nb_objet); // on saute une ligne
+  //printf("%u\t",largeur);
+  //printf("%u\t",hauteur);
+  //printf("%u\n",nb_objet); // on saute une ligne
 
 
   //Une version avec des writes , 
-  /*wr=write(sauvegarde,&largeur,sizeof(unsigned int));
+  wr=write(sauvegarde,&largeur,sizeof(unsigned int));
   if(wr<0){
 	fprintf(stderr,"Erreur lors de l'écriture de la largeur");
   }
@@ -87,7 +87,7 @@ void map_save (char *filename)
 	fprintf(stderr,"Erreur lors de l'écriture du nombre d objet");
   }
   // On revient ensuite à la ligne 
-  printf("\n");*/
+  printf("\n");
   
 
   /*On écrit ensuite la liste des objets disponibles pour la carte avec leurs caractéristiques :
@@ -149,8 +149,31 @@ void map_save (char *filename)
 
 void map_load (char *filename)
 {
-  // TODO
-  exit_with_error ("Map load is not yet implemented\n");
+ //On commence par ouvrir le fichier en lecture seule
+ int chargement=open(filename,O_RDONLY);
+ if (chargement ==-1){
+ 	fprintf(stderr,"Erreur lors de l'ouverture du fichier %s",filename);
+ }
+ 
+ //Il faut d'abord récupérer les dimensions de la carte ainsi que les différents objets afin d'appeller la fonction map_allocate(largeur , hauteur )
+ unsigned int largeur , hauteur , nb_objet ;
+ int lecture;
+ lecture = read(chargement,&largeur,sizeof(unsigned int));
+ printf("%u est la largeur",&nb_objet);
+ if (lecture < 0 ){
+	fprintf(stderr,"Erreur lors de la lecture de la largeur");
+ }
+ lecture = read(chargement,&hauteur,sizeof(unsigned int));
+ if (lecture < 0 ){
+	fprintf(stderr,"Erreur lors de la lecture de la hauteur");
+ }
+ lecture = read(chargement,&nb_objet,sizeof(unsigned int));
+  printf("%u est la largeur",nb_objet);
+ if (lecture < 0 ){
+	fprintf(stderr,"Erreur lors de la lecture du nombre d'objet");
+ }
+
+  
 }
 
 #endif

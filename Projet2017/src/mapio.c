@@ -44,108 +44,87 @@ void map_new (unsigned width, unsigned height)
   map_object_end ();
 }
 
+void bigError(char * message)
+{
+   fputs("ERROR: ", stderr);
+   fputs(message, stderr);
+   fputs("\n", stderr);
+   exit(EXIT_FAILURE);
+}
+
+void invalidMap()
+{
+   bigError("invalid map data");
+}
+
+void reader(int fd, void * buf, int count)
+{
+   int r = read(fd, buf, count);
+
+   if (r != count)
+      invalidMap();
+}
+
+void writer(int fd, void * buf, int count)
+{
+   int r = write(fd, buf, count);
+
+   if (r != count)
+      bigError("writing to map file failed");
+}
+
 void map_save (char *filename)
 {
   // On commence par créer un fichier de sauvegarde
-  int sauvegarde=open(filename,O_CREAT | O_TRUNC | O_WRONLY , 0666);
-  if (sauvegarde == -1){
-	fprintf(stderr,"Erreur lors de la création du fichier de sauvegarde ");
-	return NULL;
-  }
+  int save=open(filename,O_WRONLY|O_CREAT|O_TRUNC,0664);
+  if(save==-1)
+    bigError("probleme d'ouverture de filename");
   
-  //On redirige ensuite la sortie standard directement dans le fichier sauvegarde ( lignes de 	codes moins compliqué qu'avec des writes etc... ) , il ne faut pas oublier de sauvegarder la sortie standard !
-  int sauvegarde_stdout=dup(1);
-  int redirection=dup2(sauvegarde,1);
-  if (redirection ==-1){
-	fprintf(stderr,"Erreur lors de la redirection de stdout ");
-  }
-  
-
-  //Il faut ensuite récupérer les dimensions de la carte , on choisit unsigned int car on a pas besoin des nombres négatifs du int 
-  int largeur=map_width(); // largeur de la map
-  unsigned int hauteur=map_height(); //hauteur de la map
+  //on recupere quelques valeurs connues les dimensions de la carte
+  unsigned int width=map_width();
+  unsigned int height=map_height();
   unsigned int nb_objet=map_objects();
-  int wr;
-  
-  // La même chose en 3 lignes
-  //printf("%u\t",largeur);
-  //printf("%u\t",hauteur);
-  //printf("%u\n",nb_objet); // on saute une ligne
 
 
-  //Une version avec des writes , 
-  wr=write(sauvegarde,&largeur,sizeof(unsigned int));
-  if(wr<0){
-	fprintf(stderr,"Erreur lors de l'écriture de la largeur");
-  }
-  wr=write(sauvegarde,&hauteur,sizeof(unsigned int));
-  if(wr<0){
-	fprintf(stderr,"Erreur lors de l'écriture de la hauteur");
-  }
-   wr=write(sauvegarde,&nb_objet,sizeof(unsigned int));
-  if(wr<0){
-	fprintf(stderr,"Erreur lors de l'écriture du nombre d objet");
-  }
-  // On revient ensuite à la ligne 
-  printf("\n");
-  
+  //on commence la sauvegarde
+  writer(save,&width,sizeof(unsigned int));
+  writer(save,&height,sizeof(unsigned int));
+  writer(save,&nb_objet,sizeof(unsigned int));
 
-  /*On écrit ensuite la liste des objets disponibles pour la carte avec leurs caractéristiques :
- nom , frames , si ils sont solides , destructibles , collectables ...  Pour gérer la solidité des objets nous avons rajouté un tableaux en début de fichier
-	il pourrait être judicieux et beucoup plus simple de créer également des tableaux pour les autres paramètres afin de raccourcir le code ci-dessous */
-  char * info;
-  // On sépare chaque écriture par une tabulation , sinon c'est le bazar !
-  for(int i=0;i<nb_objet;i++){
-	printf("%s\t",map_get_name(i)); // on récupére le nom de l'objet
-	printf("%d\t",map_get_frames(i)); // on récupére le nombre de frame
-	printf("%s\t",solidite[map_get_solidity(i)]);
-	if (map_is_destructible(i)==1){
-		info="destructible";
-		printf("%s\t",info);
-	}
-	else{
-		info="not-destructible";
-		printf("%s\t",info);
-	}
-	if (map_is_collectible(i)==1){
-		info="collectible";
-		printf("%s\t",info);
-	}
-	else{
-		info="not-collectible";
-		printf("%s\t",info);
-	}
-	if (map_is_generator(i)==1){
-		info="generator";
-		printf("%s\t",info);
-	}
-	else{
-		info="not-generator";
-		printf("%s\n",info); // je met un \n pour revenir à la ligne
-	}
+  //on remplit l'air de jeu
+  for(int x=0;x<width;++x){
+    for(int y=0;y<height;++y){
+      unsigned int celltype=map_get(x,y);
+      writer(save,&celltype,sizeof(unsigned int));
+    }
   }
-  /* Il ne reste plus qu'à sauvegarder la position des objets sur la carte ainsi que le type d'objet ( fleurs pièces ....)  .
-					On effectue un parcours en largeur*/
 
-  int type;
-  for(int y=0;y<hauteur;y++){
-	for(int x=0;x<largeur;x++){
-		if(type=map_get(x,y) != MAP_OBJECT_NONE){
-			printf("%d\t",x);// sauvegarde x
-			printf("%d\t",y);// sauvegarde y
-			printf("%d",type);
-			printf("\n");
-		}
-	}
+  //on rajoute les objets du decor
+  for(int i=0;i<nb_objet;++i){
+    char * fname=map_get_name(i);
+    unsigned int fnameSize=strlen(fname);
+    writer(save,&fnameSize,sizeof(unsigned int));
+    for(int j=0;j<fnameSize;++j){
+      unsigned int a=fname[j];
+      writer(save,&a,sizeof(unsigned int));
+    }
+
+    unsigned int frames=map_get_frames(i);
+    unsigned int solidity=map_get_solidity(i);
+    unsigned int destructible =map_is_destructible(i);
+    unsigned int collectible=map_is_collectible(i);
+    unsigned int generator=map_is_generator(i);
+
+    writer(save,&frames,sizeof(unsigned int));
+    writer(save,&solidity,sizeof(unsigned int));
+    writer(save,&destructible,sizeof(unsigned int));
+    writer(save,&collectible,sizeof(unsigned int));
+    writer(save,&generator,sizeof(unsigned int));
   }
-  close(sauvegarde);
-  dup2(sauvegarde_stdout,1); // on rétablie la sortie standard
-  printf("La carte a été sauvegardée \n ");
-  
-  
 
-  
-}
+  close(save);
+
+ }
 
 void map_load (char *filename)
 {

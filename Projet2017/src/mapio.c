@@ -3,12 +3,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "map.h"
 #include "error.h"
 
 #ifdef PADAWAN
-static char * solidite[]={"air", "semi-solid","solid","liquid"};
+
+#define MAP_MAX_OBJECTS 500
+#define MAP_OBJECT_MAX_FRAMES 500
+#define MAP_OBJECT_MAX_FILENAME_SIZE 500
 
 void map_new (unsigned width, unsigned height)
 {
@@ -23,25 +27,25 @@ void map_new (unsigned width, unsigned height)
   }
 
   map_object_begin (8);
-
-  // Texture pour le sol
-  map_object_add ("images/ground.png", 1, MAP_OBJECT_SOLID);
-  // Mur
-  map_object_add ("images/wall.png", 1, MAP_OBJECT_SOLID);
-  // Gazon
-  map_object_add ("images/grass.png", 1, MAP_OBJECT_SEMI_SOLID);
-  // Marbre
-  map_object_add ("images/marble.png", 1, MAP_OBJECT_SOLID | MAP_OBJECT_DESTRUCTIBLE);
-  // Herbe
-  map_object_add ("images/herb.png", 1, MAP_OBJECT_AIR);
-  // Petit plancher flottant
-  map_object_add ("images/floor.png", 1, MAP_OBJECT_SEMI_SOLID);
-  // Pièces
-  map_object_add ("images/coin.png", 20, MAP_OBJECT_COLLECTIBLE);
-  // Fleurs
-  map_object_add ("images/flower.png", 1, MAP_OBJECT_AIR);
-
-  map_object_end ();
+  
+    // Texture pour le sol
+    map_object_add ("images/ground.png", 1, MAP_OBJECT_SOLID);
+    // Mur
+    map_object_add ("images/wall.png", 1, MAP_OBJECT_SOLID);
+    // Gazon
+    map_object_add ("images/grass.png", 1, MAP_OBJECT_SEMI_SOLID);
+    // Marbre
+    map_object_add ("images/marble.png", 1, MAP_OBJECT_SOLID | MAP_OBJECT_DESTRUCTIBLE);
+    // Herbe
+    map_object_add ("images/herb.png", 1, MAP_OBJECT_AIR);
+    // Petit plancher flottant
+    map_object_add ("images/floor.png", 1, MAP_OBJECT_SEMI_SOLID);
+    //fleur
+    map_object_add("images/flower.png",1,MAP_OBJECT_AIR);
+    //pièces
+    map_object_add("images/coin.png",20,MAP_OBJECT_AIR|MAP_OBJECT_COLLECTIBLE);
+  
+    map_object_end ();
 }
 
 void bigError(char * message)
@@ -57,17 +61,17 @@ void invalidMap()
    bigError("invalid map data");
 }
 
-void reader(int fd, void * buf, int count)
+void reader(int load, void * buf, int count)
 {
-   int r = read(fd, buf, count);
+   int r = read(load, buf, count);
 
    if (r != count)
       invalidMap();
 }
 
-void writer(int fd, void * buf, int count)
+void writer(int load, void * buf, int count)
 {
-   int r = write(fd, buf, count);
+   int r = write(load, buf, count);
 
    if (r != count)
       bigError("writing to map file failed");
@@ -91,23 +95,20 @@ void map_save (char *filename)
   writer(save,&height,sizeof(unsigned int));
   writer(save,&nb_objet,sizeof(unsigned int));
 
-  //on remplit l'air de jeu
+  //on recupere l'air de jeu
   for(int x=0;x<width;++x){
     for(int y=0;y<height;++y){
-      unsigned int celltype=map_get(x,y);
-      writer(save,&celltype,sizeof(unsigned int));
+      unsigned int pixeltype=map_get(x,y);
+      writer(save,&pixeltype,sizeof(unsigned int));
     }
   }
 
-  //on rajoute les objets du decor
+  //on recupere les objets du decor
   for(int i=0;i<nb_objet;++i){
+    
     char * fname=map_get_name(i);
-    unsigned int fnameSize=strlen(fname);
-    writer(save,&fnameSize,sizeof(unsigned int));
-    for(int j=0;j<fnameSize;++j){
-      unsigned int a=fname[j];
-      writer(save,&a,sizeof(unsigned int));
-    }
+    writer(save,&fname,sizeof(strlen(fname)));
+    
 
     unsigned int frames=map_get_frames(i);
     unsigned int solidity=map_get_solidity(i);
@@ -124,35 +125,97 @@ void map_save (char *filename)
 
   close(save);
 
- }
+}
 
 void map_load (char *filename)
 {
- //On commence par ouvrir le fichier en lecture seule
- int chargement=open(filename,O_RDONLY);
- if (chargement ==-1){
- 	fprintf(stderr,"Erreur lors de l'ouverture du fichier %s",filename);
- }
- 
- //Il faut d'abord récupérer les dimensions de la carte ainsi que les différents objets afin d'appeller la fonction map_allocate(largeur , hauteur )
- unsigned int largeur , hauteur , nb_objet ;
- int lecture;
- lecture = read(chargement,&largeur,sizeof(unsigned int));
- printf("%u est la largeur",&nb_objet);
- if (lecture < 0 ){
-	fprintf(stderr,"Erreur lors de la lecture de la largeur");
- }
- lecture = read(chargement,&hauteur,sizeof(unsigned int));
- if (lecture < 0 ){
-	fprintf(stderr,"Erreur lors de la lecture de la hauteur");
- }
- lecture = read(chargement,&nb_objet,sizeof(unsigned int));
-  printf("%u est la largeur",nb_objet);
- if (lecture < 0 ){
-	fprintf(stderr,"Erreur lors de la lecture du nombre d'objet");
- }
-
+  int load = open(filename, O_RDONLY);
+     if (load == -1)
+        bigError("unable to open map file for reading");
   
-}
+     unsigned int width     = 0;
+     unsigned int height    = 0;
+     unsigned int nbObjects = 0;
+     reader(load, &width    , sizeof(unsigned int));
+     reader(load, &height   , sizeof(unsigned int));
+     reader(load, &nbObjects, sizeof(unsigned int));
+  
+     if ( width < MIN_WIDTH || width > MAX_WIDTH|| height < MIN_HEIGHT || height > MAX_HEIGHT|| nbObjects < 0 || nbObjects > MAP_MAX_OBJECTS )
+        invalidMap();
+     
+     map_allocate(width, height);
+  
+     for (int x = 0; x < width; x++){}
+        for (int y = 0; y < height; y++)
+        {
+           unsigned int pixel = MAP_OBJECT_NONE;
+           reader(load, &pixel, sizeof(unsigned int));
+  
+           if (pixel != MAP_OBJECT_NONE && (pixel < 0 || pixel > nbObjects - 1))
+              invalidMap();
+           
+           map_set(x, y, pixel);
+        }
+      }
+     
+     map_object_begin(nbObjects);
+     
+     for (int i = 0; i < nbObjects; i++)
+     {
+              unsigned int filenameSize = 0;
+              reader(load, &filenameSize, sizeof(unsigned int));
+  
+              if (filenameSize < 1 || filenameSize > MAP_OBJECT_MAX_FILENAME_SIZE)
+              invalidMap();
+  
+              char * filename = malloc(filenameSize + 1);
+  
+              for (int j = 0; j < filenameSize; j++)
+              {
+                char * c=0;
+                reader(load, c, sizeof(strlen(filename)));
+                filename[j] = c;
+               }
+  
+              filename[filenameSize] = '\0';
+  
+              unsigned int frames       = 0;
+              unsigned int  solidity     = 0;
+              unsigned int  destructible = 0;
+              unsigned int  collectible  = 0;
+              unsigned int  generator    = 0;
+              reader(load, &frames      , sizeof(unsigned int));
+              reader(load, &solidity    , sizeof(unsigned int));
+              reader(load, &destructible, sizeof(unsigned int));
+              reader(load, &collectible , sizeof(unsigned int));
+              reader(load, &generator   , sizeof(unsigned int));
+  
+              if ( frames < 1 || frames > MAP_OBJECT_MAX_FRAMES
+                || (solidity != MAP_OBJECT_AIR && solidity != MAP_OBJECT_SEMI_SOLID && solidity != MAP_OBJECT_SOLID)
+                || (destructible != 0 && destructible != 1)
+                || (collectible  != 0 && collectible  != 1)
+                || (generator    != 0 && generator    != 1)
+               )
+                invalidMap();
+        
+               unsigned flags = 0;
+               flags |= solidity;
+               if (destructible)
+               flags |= MAP_OBJECT_DESTRUCTIBLE;
+               if (collectible)
+               flags |= MAP_OBJECT_COLLECTIBLE;
+               if (generator)
+               flags |= MAP_OBJECT_GENERATOR;
+        
+               map_object_add(filename, frames, flags);
+        
+              free(filename);
+     }
+  
+     map_object_end();
+     
+     close(load);
+  }
+
 
 #endif

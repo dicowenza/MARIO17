@@ -107,6 +107,8 @@ void map_save (char *filename)
   for(int i=0;i<nb_objet;++i){
     
     char * fname=map_get_name(i);
+    unsigned int x=sizeof(strlen(fname));
+    writer(save,&x,sizeof(unsigned int));
     writer(save,&fname,sizeof(strlen(fname)));
     
 
@@ -124,7 +126,7 @@ void map_save (char *filename)
   }
 
   close(save);
-
+  printf("sauvegarde reussi !\n");
 }
 
 void map_load (char *filename)
@@ -140,45 +142,46 @@ void map_load (char *filename)
      reader(load, &height   , sizeof(unsigned int));
      reader(load, &nbObjects, sizeof(unsigned int));
   
-     if ( width < MIN_WIDTH || width > MAX_WIDTH|| height < MIN_HEIGHT || height > MAX_HEIGHT|| nbObjects < 0 || nbObjects > MAP_MAX_OBJECTS )
-        invalidMap();
+     if ( width < MIN_WIDTH || width > MAX_WIDTH || height < MIN_HEIGHT || height > MAX_HEIGHT|| nbObjects < 0 || nbObjects > MAP_MAX_OBJECTS ){
+      printf("foutage de gueule wallah1\n");
+      invalidMap();
+     }        
      
      map_allocate(width, height);
   
-     for (int x = 0; x < width; x++){}
+     for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++)
         {
            unsigned int pixel = MAP_OBJECT_NONE;
            reader(load, &pixel, sizeof(unsigned int));
   
-           if (pixel != MAP_OBJECT_NONE && (pixel < 0 || pixel > nbObjects - 1))
+           if (pixel != MAP_OBJECT_NONE && (pixel < 0 || pixel > nbObjects - 1)){
+             printf("foutage de gueule wallah2\n");
               invalidMap();
-           
+           }
            map_set(x, y, pixel);
         }
       }
      
      map_object_begin(nbObjects);
-     
+     printf("on n'est pas bon nous\n");
      for (int i = 0; i < nbObjects; i++)
      {
-              unsigned int filenameSize = 0;
-              reader(load, &filenameSize, sizeof(unsigned int));
-  
-              if (filenameSize < 1 || filenameSize > MAP_OBJECT_MAX_FILENAME_SIZE)
-              invalidMap();
-  
-              char * filename = malloc(filenameSize + 1);
-  
-              for (int j = 0; j < filenameSize; j++)
-              {
-                char * c=0;
-                reader(load, c, sizeof(strlen(filename)));
-                filename[j] = c;
-               }
-  
-              filename[filenameSize] = '\0';
-  
+              unsigned int size=0;
+              reader(load,&size,sizeof(unsigned int));
+              printf("sizeof size %d\n",size);
+              printf("sizeof size %d\n",sizeof(size));
+              
+              if (size < 1 || size > MAP_OBJECT_MAX_FILENAME_SIZE){
+                printf("foutage de gueule wallah3\n");
+                invalidMap();
+              }
+              
+              
+              char * filename = malloc(size + 1);
+              reader(load, filename, sizeof(size));
+              printf("filename %s \n",filename);
+              
               unsigned int frames       = 0;
               unsigned int  solidity     = 0;
               unsigned int  destructible = 0;
@@ -188,28 +191,37 @@ void map_load (char *filename)
               reader(load, &solidity    , sizeof(unsigned int));
               reader(load, &destructible, sizeof(unsigned int));
               reader(load, &collectible , sizeof(unsigned int));
-              reader(load, &generator   , sizeof(unsigned int));
+              reader(load, &generator   , sizeof(unsigned int)); 
+            
+              
+              
+
   
-              if ( frames < 1 || frames > MAP_OBJECT_MAX_FRAMES
+              /*if ( frames < 1 || frames > MAP_OBJECT_MAX_FRAMES
                 || (solidity != MAP_OBJECT_AIR && solidity != MAP_OBJECT_SEMI_SOLID && solidity != MAP_OBJECT_SOLID)
                 || (destructible != 0 && destructible != 1)
                 || (collectible  != 0 && collectible  != 1)
                 || (generator    != 0 && generator    != 1)
-               )
-                invalidMap();
-        
-               unsigned flags = 0;
-               flags |= solidity;
+               ){
+                  printf("foutage de gueule wallah4\n");
+                  invalidMap();
+               }*/
+               unsigned int flags = 0;
+               flags = solidity;
                if (destructible)
-               flags |= MAP_OBJECT_DESTRUCTIBLE;
+                  flags = MAP_OBJECT_DESTRUCTIBLE;
                if (collectible)
-               flags |= MAP_OBJECT_COLLECTIBLE;
+                  flags = MAP_OBJECT_COLLECTIBLE;
                if (generator)
-               flags |= MAP_OBJECT_GENERATOR;
-        
+                  flags = MAP_OBJECT_GENERATOR;
+
+            
+                  
+
                map_object_add(filename, frames, flags);
-        
+               printf("foutage de gueule wallah4\n");
               free(filename);
+
      }
   
      map_object_end();

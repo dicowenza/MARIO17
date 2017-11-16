@@ -112,8 +112,8 @@ void map_save (char *filename)
 
     for (int j = 0; j < filenameSize; j++)
     {
-       int8_t c = filename[j];
-       writer(save, &c, sizeof(int8_t));
+       char c = filename[j];
+       writer(save, &c, sizeof(char));
     }
 
 
@@ -179,8 +179,8 @@ void map_load (char *filename)
         
               for (int j = 0; j < filenameSize; j++)
               {
-                 int8_t c = 0;
-                 reader(load, &c, sizeof(int8_t));
+                 char c = 0;
+                 reader(load, &c, sizeof(char));
                  filename[j] = c;
               }
         

@@ -108,6 +108,7 @@ void setWidth(int file,unsigned int width){
 	        write(temp,&generator,sizeof(unsigned int));
 	  }
 	  	close(temp);
+		rename("../maps/save2.map","../maps/saved.map");
 	}
 
 }
@@ -117,19 +118,22 @@ void main(int argc,char ** argv){
 		bigError("Erreur lors de l'ouverture du fichier ");
 	}
 	char * c=argv[2];
-	switch(c){
-	case '"--getWidth"':
-	  printf("la largeur est %u\n",getWidth(file));break;
+	
+	if(strcmp(c,"--getwidth")==0){
+	  printf("la largeur est %u\n",getWidth(file));
 	}
-	/*//Cas du getWidth
-	printf("la largeur est %u\n",getWidth(file));
-	//Cas du getNbObejct
-	printf("le nombre d'objet est %u\n",getNbObject(file));
-
-	//Cas du getInfo
-	printf("la largeur est %u\n",getWidth(file));
-	printf("la hauteur est %u\n",getHeight(file));
-	printf("le nombre d'objet est %u\n",getNbObject(file));*/
+	else if(strcmp(c,"--getheight")==0){
+	  printf("la hauteur est %u\n",getHeight(file));
+	}
+	else if(strcmp(c,"--getobjects")==0){
+	  printf("le nombre d'objet est %u\n",getNbObject(file));
+	}
+	else if(strcmp(c,"--getinfo")==0){
+	   printf("la largeur est %u\n",getWidth(file));
+	   printf("la hauteur est %u\n",getHeight(file));
+	    printf("le nombre d'objet est %u\n",getNbObject(file));
+	   
+	}
 	if(strcmp(c,"--setWidth")==0){
 	    unsigned int a=atoi(argv[3]);
 	    setWidth(file,a);

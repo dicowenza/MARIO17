@@ -7,11 +7,11 @@
 							/*Fonctions setteurs des données de la carte */
 
 void main(int argc,char ** argv){
-	int file=open(argv[1],O_RDONLY);
+	int file=open(argv[1],O_RDWR);
 	if (file==-1){
 		bigError("Erreur lors de l'ouverture du fichier ");
 	}
-	char * c=argv[2];
+	char * c=argv[2];// nom de la fonction à exécuter
 	
 	if(strcmp(c,"--getwidth")==0){
 	  printf("la largeur est %u\n",getWidth(file));
@@ -29,9 +29,19 @@ void main(int argc,char ** argv){
 	   
 	}
 	if(strcmp(c,"--setWidth")==0){
+	    if(argc!=4){
+		fprintf(stderr," 4 paramètres nécessaire pour setWidth");
+	    }
 	    unsigned int a=atoi(argv[3]);
 	    setWidth(file,a);
 	  }
 	  
+	/*if(strcmp(c,"--setHeight")==0){
+	    if(argc!=4){
+		fprintf(stderr," 4 paramètres nécessaire pour setWidth");
+	    }
+	    unsigned int a=atoi(argv[3]);
+	    setHeight(file,a);
+	  }*/
 	    
 }

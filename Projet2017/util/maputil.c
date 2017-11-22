@@ -12,7 +12,7 @@ void main(int argc,char ** argv){
 		bigError("Erreur lors de l'ouverture du fichier ");
 	}
 	char * c=argv[2];// nom de la fonction à exécuter
-	
+
 	if(strcmp(c,"--getwidth")==0){
 	  printf("la largeur est %u\n",getWidth(file));
 	}
@@ -26,7 +26,7 @@ void main(int argc,char ** argv){
 	   printf("la largeur est %u\n",getWidth(file));
 	   printf("la hauteur est %u\n",getHeight(file));
 	    printf("le nombre d'objet est %u\n",getNbObject(file));
-	   
+
 	}
 	if(strcmp(c,"--setWidth")==0){
 	    if(argc!=4){
@@ -35,13 +35,13 @@ void main(int argc,char ** argv){
 	    unsigned int a=atoi(argv[3]);
 	    setWidth(file,a);
 	  }
-	  
-	/*if(strcmp(c,"--setHeight")==0){
+
+	if(strcmp(c,"--setHeight")==0){
 	    if(argc!=4){
 		fprintf(stderr," 4 paramètres nécessaire pour setWidth");
 	    }
 	    unsigned int a=atoi(argv[3]);
 	    setHeight(file,a);
-	  }*/
-	    
+	  }
+
 }

@@ -14,7 +14,11 @@ void bigError(char * message)
    exit(EXIT_FAILURE);
 }
 
-
+void copyWrite(int src,int dst,int count,void * buf){
+	read(file,buf,count);
+	write(temp,buf,count);
+}
+	
 void copyEndFile(int src,int dst,unsigned int frames ,unsigned int solidity,unsigned int destructible , unsigned int collectible , unsigned int generator ){
 	read(src,&frames,sizeof(unsigned int));
 	    read(src,&solidity,sizeof(unsigned int));
@@ -71,9 +75,7 @@ void setWidth(int file,unsigned int width){
 				n'apparaitront pas à l'écran*/
 
 	if (new_width< old_width) {
-
 	  /* On va créer un fichier temporaire pour recopier le fichier actuel dans le fichier temporaire avec les  nouvelles dimensions et en ne recopiant que les objets aux bonnes coordonnées !*/
-
 	  /*On commence par réecrire les dimensions de la carte */
 	  int temp=open("../maps/save2.map",O_CREAT | O_TRUNC | O_RDONLY| O_WRONLY , 0666);
 	  write(temp,&new_width,sizeof(unsigned int));
@@ -95,12 +97,11 @@ void setWidth(int file,unsigned int width){
 	   
 	  for(int i=0;i<nbObject;i++){
 	    unsigned int filenameSize=0;
-	    read(file,&filenameSize,sizeof(unsigned int));
-	    write(temp,&filenameSize,sizeof(unsigned int));
+	    copyWrite(file,temp,sizeof(unsigned int ),filenameSize);
 	    for(int j=0;j<filenameSize;j++){
 	      char car=0;
-	      read(file,&car,sizeof(char));
-	      write(temp,&car,sizeof(char));
+		    copyWrite(file,temp,sizeof(char),car);
+	      
 	    }
 	    write(temp,'\0',sizeof(char));
 	    unsigned int frames , solidity , destructible,collectible,generator;

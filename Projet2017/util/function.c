@@ -15,8 +15,8 @@ void bigError(char * message)
 }
 
 void copyWrite(int src,int dst,int count,void * buf){
-	read(file,buf,count);
-	write(temp,buf,count);
+	read(src,buf,count);
+	write(dst,buf,count);
 }
 	
 void copyEndFile(int src,int dst,unsigned int frames ,unsigned int solidity,unsigned int destructible , unsigned int collectible , unsigned int generator ){
@@ -105,7 +105,7 @@ void setWidth(int file,unsigned int width){
 	    }
 	    write(temp,'\0',sizeof(char));
 	    unsigned int frames , solidity , destructible,collectible,generator;
-	    copyEndFile(file,temp,solidity,destructible,collectible,generator);
+	    copyEndFile(file,temp,frames,solidity,destructible,collectible,generator);
 	  }
 	  	close(temp);
 		rename("../maps/save2.map","../maps/saved.map");

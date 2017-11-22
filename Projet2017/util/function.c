@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
-
+#include "function.h"
 
 	//print un message d'erreur
 void bigError(char * message)

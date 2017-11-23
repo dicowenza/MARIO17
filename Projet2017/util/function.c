@@ -42,12 +42,9 @@ unsigned int getWidth(int file){
 
 /*Idem pour la fonction getHeight sauf qu'il faut d'abord lire la largeur et ensuite la hauteur ! */
 unsigned int getHeight(int file){
-  /* on se place au début du fichier car la deuxième valeur du fichier est la hauteur
-     et elle est de type unsigned int */
   unsigned int hauteur;
-  lseek(file,0,SEEK_SET);
-  read(file,&hauteur,sizeof(unsigned int )); // on lit la premiere valeur écrite dans le fichier (largeur) et on la stocke dans hauteur , cette valeur est " sautée  "
-  read(file,&hauteur,sizeof(unsigned int));//on lit la deuxieme valeur écrite dans le fichier (hauteur ) et on la stocke dans hauteur
+  lseek(file,sizeof(unsigned int),SEEK_SET);//on se positionne à la deuxieme valeur du fichier
+  read(file,&hauteur,sizeof(unsigned int));
   return hauteur;
 }
 
@@ -55,13 +52,10 @@ unsigned int getHeight(int file){
 
 /*Meme chose pour la fonction getNbObject il faut lire largeur et hauteur avant d'avoir le nombre d'objet*/
 unsigned int getNbObject(int file){
-  /* on se place au début du fichier car la deuxième valeur du fichier est la hauteur
-     et elle est de type unsigned int */
+  
   unsigned int nbObjet;
-  lseek(file,0,SEEK_SET);
-  read(file,&nbObjet,sizeof(unsigned int )); // on lit la premiere valeur écrite dans le fichier( largeur ) et on la stocke dans nbObjet, cette valeur est " sautée  "
-  read(file,&nbObjet,sizeof(unsigned int));// on lit la deuxieme valeur écrite dans le fichier (hauteur ) et on la stocke dans nbObjet, cette valeur est " sautée  "
-  read(file,&nbObjet,sizeof(unsigned int));// on lit la troisieme valeur écrite dans le fichier (nbObjet ) et on la stocke dans nbObjet
+  lseek(file,2*sizeof(unsigned int),SEEK_SET);//on se positionne à la deuxieme valeur du fichier
+  read(file,&nbObjet,sizeof(unsigned int));
   return nbObjet;
 }
 
@@ -83,26 +77,24 @@ void setWidth(int file,unsigned int width){
   if (new_width< old_width) {
     for(int i=0;i<old_width;i++){
       for(int j=0;j<height;j++){
-	read(file,&val,sizeof(unsigned int));
-	if(i<new_width){ //on recopie si on est plus petit que la nouvelle largeur
-	  write(temp,&val,sizeof(unsigned int));
-	}
+	      read(file,&val,sizeof(unsigned int));
+	      if(i<new_width){ //on recopie si on est plus petit que la nouvelle largeur
+	        write(temp,&val,sizeof(unsigned int));
+	      }
       }
     }
   }
   else{
     for(int i=0;i<new_width;i++){
       for(int j=0;j<height;j++){
-	if(i<old_width){
-
-	  read(file,&val,sizeof(unsigned int));
-	  write(temp,&val,sizeof(unsigned int));
-	}
-	else{/*si on dépasse la largeur old_width il faut définir tout les nouveaux objets en MAP_OBJECT_NONE */
-	  unsigned int a=MAP_OBJECT_NONE;
-	  write(temp,&a,sizeof(unsigned int));
-
-	}
+	      if(i<old_width){
+	          read(file,&val,sizeof(unsigned int));
+	          write(temp,&val,sizeof(unsigned int));
+	      }
+	      else{/*si on dépasse la largeur old_width il faut définir tout les nouveaux objets en MAP_OBJECT_NONE */
+	          unsigned int a=MAP_OBJECT_NONE;
+            write(temp,&a,sizeof(unsigned int));
+        }
       }
     }
   }
@@ -116,7 +108,6 @@ void setWidth(int file,unsigned int width){
       char car=0;
       read(file,&car,sizeof(char));
       write(temp,&car,sizeof(char));
-
     }
     write(temp,'\0',sizeof(char));
     unsigned int frames , solidity , destructible,collectible,generator;
@@ -166,7 +157,6 @@ void setHeight(int file,unsigned int height){
   }/* puis on recopie les objets et lerus caractéristiques */
     for(int i=0;i<nbObject;i++){
       unsigned int filenameSize=0;
-
       read(file,&filenameSize,sizeof(unsigned int));
       write(temp,&filenameSize,sizeof(unsigned int));
       for(int j=0;j<filenameSize;j++){

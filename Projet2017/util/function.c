@@ -14,6 +14,17 @@ void bigError(char * message)
   exit(EXIT_FAILURE);
 }
 
+bool comparer(Object obj1,Object obj2){
+  if(strcmp(obj1->filename,obj2->filename)==0){
+      if(obj1->frames==obj2->frames&&obj1->solidity==obj2->solidity
+          &&obj1->destructible==obj2->destructible&&obj1->collectible==obj2->collectible
+          &&obj1->generator==obj2->generator)
+          return true;
+  }
+  else 
+      return false;
+}
+
 void copyWrite(int src,int dst,int count,void * buf){
   read(src,&buf,count);
   write(dst,&buf,count);
@@ -172,4 +183,14 @@ void setHeight(int file,unsigned int height){
     }
     close(temp);
     rename("../maps/save2.map","../maps/saved.map");
+  }
+  
+  
+  void pruneObject(int file,Object objectToremove){
+ 
+  }
+
+
+  void addObject(int file,Object * ObjectToadd){
+
   }

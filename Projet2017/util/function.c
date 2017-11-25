@@ -256,7 +256,7 @@ void replace_objects(unsigned int argc, char* argv[]){
                 reader(in,&generator,sizeof(unsigned int));
                 writer(out,&generator,sizeof(unsigned int));    
               }
-  //ajouter nouvelle objet
+  //ajouter nouvel objet
 
           
           unsigned int newsize=strlen(argv[3]);

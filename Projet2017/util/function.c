@@ -14,16 +14,29 @@ void bigError(char * message)
   exit(EXIT_FAILURE);
 }
 
-bool comparer(Object obj1,Object obj2){
-  if(strcmp(obj1->filename,obj2->filename)==0){
-      if(obj1->frames==obj2->frames&&obj1->solidity==obj2->solidity
-          &&obj1->destructible==obj2->destructible&&obj1->collectible==obj2->collectible
-          &&obj1->generator==obj2->generator)
-          return true;
-  }
-  else 
-      return false;
+void invalidMap()
+{
+   bigError("invalid map data");
 }
+
+void reader(int load, void * buf, int count) 
+{
+   int r = read(load, buf, count);
+
+   if (r != count)
+      invalidMap();
+}
+
+
+void writer(int load, void * buf, int count)
+{
+   int r = write(load, buf, count);
+
+   if (r != count)
+      bigError("writing to map file failed");
+}
+
+
 
 void copyWrite(int src,int dst,int count,void * buf){
   read(src,&buf,count);
@@ -183,14 +196,100 @@ void setHeight(int file,unsigned int height){
     }
     close(temp);
     rename("../maps/save2.map","../maps/saved.map");
-  }
+}
   
   
-  void pruneObject(int file,Object objectToremove){
+void replace_objects(unsigned int argc, char* argv[]){
+
+          unsigned int in = open(argv[1], O_RDONLY);
+          if(in == -1)
+            bigError("Fichier inexistant !\n");
+          unsigned int out= open("../map/maptmp",O_CREAT | O_WRONLY | O_TRUNC, 0666 );
+          if(in == -1)
+            bigError("probleme de creatin de maptmp!\n");
+  //les dimensions de la carte
+
+          unsigned int width, height, nbObjet;
+
+          reader(in, &width, sizeof(unsigned int));
+          reader(in, &height, sizeof(unsigned int));
+          reader(in, &nbObjet, sizeof(unsigned int));
+    
+          writer(out, &width, sizeof(unsigned int));
+          writer(out, &height, sizeof(unsigned int));
+          writer(out, &nbObjet, sizeof(unsigned int));
+  //les pixels a copier
+          unsigned int pixeltype=0;
+          for(unsigned int x=0;x<width;++x){
+            for(unsigned int y=0;y<height;++y){
+              reader(in,&pixeltype,sizeof(unsigned int));
+              writer(out,&pixeltype,sizeof(unsigned int));
+            }
+          }
+  //on copie les objets de la carte 
+          unsigned int filenameSize;
+          char filename;
+          unsigned int frames;
+          unsigned int solidity;
+          unsigned int destructible;
+          unsigned int collectible;
+          unsigned int generator;
+
+          for(int i=0;i<nbObjet;++i){ 
+              
+              reader(in, &filenameSize, sizeof(unsigned int));
+              writer(out, &filenameSize, sizeof(unsigned int));
+                
+                for (unsigned int j = 0; j < filenameSize; j++){
+                    reader(in, &filename, sizeof(char));
+                    writer(out, &filename, sizeof(char));
+                }
+                
+                reader(in,&frames,sizeof(unsigned int));
+                writer(out,&frames,sizeof(unsigned int));
+                reader(in,&solidity,sizeof(unsigned int));
+                writer(out,&solidity,sizeof(unsigned int));
+                reader(in,&destructible,sizeof(unsigned int));
+                writer(out,&destructible,sizeof(unsigned int));
+                reader(in,&collectible,sizeof(unsigned int));
+                writer(out,&collectible,sizeof(unsigned int));
+                reader(in,&generator,sizeof(unsigned int));
+                writer(out,&generator,sizeof(unsigned int));    
+              }
+  //ajouter nouvelle objet
+
+          
+          unsigned int newsize=strlen(argv[3]);
+          
+          for( int i = 0; i < nbObjet * 6; i+=6){
+            
+            write(out, &newsize,sizeof(unsigned int));
+            
+            char * c=argv[3+i];
+
+            for(int j=0;j<newsize;j++){
+                writer(out,c[j],sizeof(char));
+            }
  
-  }
+            unsigned int frames = atoi(argv[4 + i]);
+            unsigned int solidity =atoi(argv[5 + i]);
+            unsigned int destructible =atoi(argv[6 + i]);
+            unsigned int collectible =atoi(argv[7 + i]);
+            unsigned int generator =atoi(argv[8 + i]);
+ 
+            write(out, &frames, sizeof(unsigned int));
+            write(out, &solidity, sizeof(unsigned int));
+            write(out, &destructible, sizeof(unsigned int));
+            write(out, &collectible, sizeof(unsigned int));
+            write(out, &generator, sizeof(unsigned int));
+          }
+          close(in);
+          close(out);
+          remove(argv[1]);
+          rename(out, argv[1]);
+          exit(0);
+}
 
 
-  void addObject(int file,Object * ObjectToadd){
 
-  }
+

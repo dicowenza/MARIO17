@@ -286,7 +286,7 @@ void replace_objects(unsigned int argc, char* argv[]){
           close(in);
           close(out);
           remove(argv[1]);
-          rename(out, argv[1]);
+          rename("../map/maptmp", argv[1]);
           exit(0);
 }
 

@@ -28,7 +28,7 @@ void main(int argc,char ** argv){
 	    printf("le nombre d'objet est %u\n",getNbObject(file));
 
 	}
-	if(strcmp(c,"--setWidth")==0){
+	if(strcmp(c,"--setwidth")==0){
 	    if(argc!=4){
 		fprintf(stderr," 4 paramètres nécessaire pour setWidth");
 	    }
@@ -36,12 +36,19 @@ void main(int argc,char ** argv){
 	    setWidth(file,a);
 	  }
 
-	if(strcmp(c,"--setHeight")==0){
+	if(strcmp(c,"--setheight")==0){
 	    if(argc!=4){
 		fprintf(stderr," 4 paramètres nécessaire pour setWidth");
 	    }
 	    unsigned int a=atoi(argv[3]);
 	    setHeight(file,a);
+	  }
+	if(strcmp(c,"--pruneobjects")==0){
+	    if(argc!=3){
+		fprintf(stderr," 3 paramètres nécessaire pour pruneobjects");
+	    }
+
+	    pruneObjects(file);
 	  }
 
 }

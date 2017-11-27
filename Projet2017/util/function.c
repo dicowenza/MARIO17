@@ -6,6 +6,7 @@
 #include "function.h"
 #include "../include/map.h"
 //print un message d'erreur
+
 void bigError(char * message)
 {
   fputs("ERROR: ", stderr);
@@ -19,7 +20,7 @@ void invalidMap()
    bigError("invalid map data");
 }
 
-void reader(int load, void * buf, int count) 
+void reader(int load, void * buf, int count)
 {
    int r = read(load, buf, count);
 
@@ -76,7 +77,7 @@ unsigned int getHeight(int file){
 
 /*Meme chose pour la fonction getNbObject il faut lire largeur et hauteur avant d'avoir le nombre d'objet*/
 unsigned int getNbObject(int file){
-  
+
   unsigned int nbObjet;
   lseek(file,2*sizeof(unsigned int),SEEK_SET);//on se positionne à la deuxieme valeur du fichier
   read(file,&nbObjet,sizeof(unsigned int));
@@ -111,7 +112,7 @@ void setWidth(int file,unsigned int width){
   else{
     for(int i=0;i<new_width;i++){
       for(int j=0;j<height;j++){
-	      if(i<old_width){
+	      if(i<old_width){// on recopie toutes les anciennes valeurs
 	          read(file,&val,sizeof(unsigned int));
 	          write(temp,&val,sizeof(unsigned int));
 	      }
@@ -125,7 +126,6 @@ void setWidth(int file,unsigned int width){
 
   for(int i=0;i<nbObject;i++){
     unsigned int filenameSize=0;
-
     read(file,&filenameSize,sizeof(unsigned int));
     write(temp,&filenameSize,sizeof(unsigned int));
     for(int j=0;j<filenameSize;j++){
@@ -197,9 +197,9 @@ void setHeight(int file,unsigned int height){
     close(temp);
     rename("../maps/save2.map","../maps/saved.map");
 }
-  
-  
-void replace_objects(unsigned int argc, char* argv[]){
+
+
+void replace_objects( int argc, char* argv[]){
 
           unsigned int in = open(argv[1], O_RDONLY);
           if(in == -1)
@@ -214,7 +214,7 @@ void replace_objects(unsigned int argc, char* argv[]){
           reader(in, &width, sizeof(unsigned int));
           reader(in, &height, sizeof(unsigned int));
           reader(in, &nbObjet, sizeof(unsigned int));
-    
+
           writer(out, &width, sizeof(unsigned int));
           writer(out, &height, sizeof(unsigned int));
           writer(out, &nbObjet, sizeof(unsigned int));
@@ -226,7 +226,7 @@ void replace_objects(unsigned int argc, char* argv[]){
               writer(out,&pixeltype,sizeof(unsigned int));
             }
           }
-  //on copie les objets de la carte 
+  //on copie les objets de la carte
           unsigned int filenameSize;
           char filename;
           unsigned int frames;
@@ -235,16 +235,16 @@ void replace_objects(unsigned int argc, char* argv[]){
           unsigned int collectible;
           unsigned int generator;
 
-          for(int i=0;i<nbObjet;++i){ 
-              
+          for(int i=0;i<nbObjet;++i){
+
               reader(in, &filenameSize, sizeof(unsigned int));
               writer(out, &filenameSize, sizeof(unsigned int));
-                
+
                 for (unsigned int j = 0; j < filenameSize; j++){
                     reader(in, &filename, sizeof(char));
                     writer(out, &filename, sizeof(char));
                 }
-                
+
                 reader(in,&frames,sizeof(unsigned int));
                 writer(out,&frames,sizeof(unsigned int));
                 reader(in,&solidity,sizeof(unsigned int));
@@ -254,29 +254,29 @@ void replace_objects(unsigned int argc, char* argv[]){
                 reader(in,&collectible,sizeof(unsigned int));
                 writer(out,&collectible,sizeof(unsigned int));
                 reader(in,&generator,sizeof(unsigned int));
-                writer(out,&generator,sizeof(unsigned int));    
+                writer(out,&generator,sizeof(unsigned int));
               }
   //ajouter nouvel objet
 
-          
+
           unsigned int newsize=strlen(argv[3]);
-          
+
           for( int i = 0; i < nbObjet * 6; i+=6){
-            
+
             write(out, &newsize,sizeof(unsigned int));
-            
+
             char * c=argv[3+i];
 
             for(int j=0;j<newsize;j++){
                 writer(out,c[j],sizeof(char));
             }
- 
+
             unsigned int frames = atoi(argv[4 + i]);
             unsigned int solidity =atoi(argv[5 + i]);
             unsigned int destructible =atoi(argv[6 + i]);
             unsigned int collectible =atoi(argv[7 + i]);
             unsigned int generator =atoi(argv[8 + i]);
- 
+
             write(out, &frames, sizeof(unsigned int));
             write(out, &solidity, sizeof(unsigned int));
             write(out, &destructible, sizeof(unsigned int));
@@ -289,7 +289,64 @@ void replace_objects(unsigned int argc, char* argv[]){
           rename("../map/maptmp", argv[1]);
           exit(0);
 }
+void pruneObjects(int file){
+	int temp=open("../maps/save2.map",O_CREAT | O_WRONLY | O_TRUNC, 0666 );
+  lseek(temp,0,SEEK_SET);
+	unsigned int width=getWidth(file);
+	unsigned int height=getHeight(file);
+	unsigned int nbObject=getNbObject(file);
+	unsigned int new_nb=0;
+	write(temp,&width,sizeof(unsigned int));
+	write(temp,&height,sizeof(unsigned int));
+	write(temp,&nbObject,sizeof(unsigned int));
+	int tab[nbObject];
+	for(int i=0;i<nbObject;i++){
+		tab[i]=0;
+}
+	//les pixels a copier
+          unsigned int pixeltype=0;
+          for(unsigned int x=0;x<width;++x){
+            for(unsigned int y=0;y<height;++y){
+              read(file,&pixeltype,sizeof(unsigned int));
+              write(temp,&pixeltype,sizeof(unsigned int));
+		if(pixeltype!=MAP_OBJECT_NONE){
+			tab[pixeltype]=tab[pixeltype]+1;
+
+		}
+            }
+          }
+	//on copie les objets de la carte
+          unsigned int filenameSize,frames,solidity,destructible,collectible,generator;
+          char filename;
+          for(int i=0;i<nbObject;++i){
+              read(file, &filenameSize, sizeof(unsigned int));
+		if(tab[i]!=0){
+		new_nb+=1;
+    printf("%u\n",new_nb);
+              write(temp, &filenameSize, sizeof(unsigned int));
+                }
+                for (unsigned int j = 0; j < filenameSize; j++){
+                    read(file, &filename, sizeof(char));
+		if(tab[i]!=0){
+                    write(temp, &filename, sizeof(char));
+		}
+                }
+                read(file,&frames,sizeof(unsigned int));
+		read(file,&solidity,sizeof(unsigned int));
+		read(file,&destructible,sizeof(unsigned int));
+		read(file,&collectible,sizeof(unsigned int));
+		read(file,&generator,sizeof(unsigned int));
+		if(tab[i]!=0){
+                write(temp,&frames,sizeof(unsigned int));
+                write(temp,&solidity,sizeof(unsigned int));
+                write(temp,&destructible,sizeof(unsigned int));
+                write(temp,&collectible,sizeof(unsigned int));
+                write(temp,&generator,sizeof(unsigned int));
+		}
+              }
+	lseek(temp,sizeof(unsigned int)*2,SEEK_SET);
+	write(temp,&new_nb,sizeof(unsigned int));
+	close(temp);
 
 
-
-
+}

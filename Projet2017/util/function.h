@@ -24,6 +24,7 @@ void copyWrite(int src,int dst,int count,void * buf);
 void setWidth(int file,unsigned int width);
 void setHeight(int file,unsigned int height);
 
-//void replace_objects(int argc, char* argv[]);
-//void delete_useless_objects(char* argv[]);
+void replace_objects(int argc, char* argv[]);
+void pruneObjects(int file);
 #endif
+

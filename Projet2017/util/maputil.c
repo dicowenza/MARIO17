@@ -47,8 +47,11 @@ void main(int argc,char ** argv){
 	    if(argc!=3){
 		fprintf(stderr," 3 paramètres nécessaire pour pruneobjects");
 	    }
-
 	    pruneObjects(file);
 	  }
+		if(strcmp(c,"--setobjects")==0){
+
+		   replace_objects(argc,argv,file);
+		  }
 
 }

@@ -7,6 +7,12 @@
 
 int main(int argc,char ** argv){
 
+	if(argc < 3 ){
+		printf("Erreur paramètres : maputil <file> -options[-getwidth	-getheight -getobjects -getinfo -setwidth -setheight -setobjects -pruneobjects]\n");
+		exit(1);
+	}
+	
+
 	int file=open(argv[1],O_RDWR);
 
 	if (file==-1)
@@ -28,7 +34,7 @@ int main(int argc,char ** argv){
 	   printf("la hauteur est %u\n",getHeight(file));
 	   printf("le nombre d'objet est %u\n",getNbObject(file));
 	}
-	if(strcmp(commande,"--setwidth")==0){
+	else if(strcmp(commande,"--setwidth")==0){
 	    if(argc!=4)
 	       fprintf(stderr," 4 paramètres nécessaire pour setWidth");
 	    
@@ -40,7 +46,7 @@ int main(int argc,char ** argv){
 	    setWidth(file,a);
 	  }
 
-	if(strcmp(commande,"--setheight")==0){
+	else if(strcmp(commande,"--setheight")==0){
 	    if(argc!=4)
 	       fprintf(stderr," 4 paramètres nécessaire pour setheight");
 	 
@@ -52,16 +58,17 @@ int main(int argc,char ** argv){
 	    setHeight(file,a);
 	  }
 
-	if(strcmp(commande,"--pruneobjects")==0){
-	    if(argc!=3){
-		fprintf(stderr," 3 paramètres nécessaire pour pruneobjects");
-	    }
+	else if(strcmp(commande,"--pruneobjects")==0){
 	    pruneObjects(file);
 	  }
 		
-	if(strcmp(commande,"--setobjects")==0)
+	else if(strcmp(commande,"--setobjects")==0){
 	   replace_objects(argc,argv,file);
-		  
+	}
+	else {
+	    printf("Erreur paramètres : maputil <file> -options[-getwidth	-getheight -getobjects -getinfo -setwidth -setheight -setobjects -pruneobjects]\n");
+	    exit(1);
+	}  
 	return EXIT_SUCCESS;
 
 }

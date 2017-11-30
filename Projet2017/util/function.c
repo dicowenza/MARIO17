@@ -211,12 +211,12 @@ void replace_objects( int argc, char* argv[],int file){
               unsigned int newsize=strlen(argv[3+i]);
 
             write(file, &newsize,sizeof(unsigned int));
-            printf("%u\n",newsize);
+ 
             char * c=argv[3+i];
 
             for(int j=0;j<newsize;j++){
                 write(file,&c[j],sizeof(char));
-		printf("%c\n",c[j]);
+	
                 
             }
             unsigned int nframes = atoi(argv[4 +i]);

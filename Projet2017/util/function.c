@@ -200,78 +200,29 @@ void setHeight(int file,unsigned int height){
 
 
 void replace_objects( int argc, char* argv[],int file){
-          int out= open("../maps/save2.map",O_CREAT | O_WRONLY | O_TRUNC, 0666 );
-
+  /*on se place à la fin du fichier ( là où il y a les objets et leurs caractéristiques )*/
   //les dimensions de la carte
+          unsigned int nbObjet=getNbObject(file);
+          unsigned int object_add=(argc-3)/6;
+          lseek(file,0,SEEK_END);
+		
+          for( int i =0; i<object_add ;i++){
+		
+              unsigned int newsize=strlen(argv[3*(i+1+x)]);
 
-          unsigned int width, height, nbObjet;
-
-          read(file, &width, sizeof(unsigned int));
-          read(file, &height, sizeof(unsigned int));
-          read(file, &nbObjet, sizeof(unsigned int));
-
-          write(out, &width, sizeof(unsigned int));
-          write(out, &height, sizeof(unsigned int));
-          write(out, &nbObjet, sizeof(unsigned int));
-  //les pixels a copier
-          unsigned int pixeltype=0;
-          for(unsigned int x=0;x<width;++x){
-            for(unsigned int y=0;y<height;++y){
-              read(file,&pixeltype,sizeof(unsigned int));
-              write(out,&pixeltype,sizeof(unsigned int));
-            }
-          }
-
-  //on copie les objets de la carte
-          unsigned int filenameSize;
-          char filename;
-          unsigned int frames;
-          unsigned int solidity;
-          unsigned int destructible;
-          unsigned int collectible;
-          unsigned int generator;
-
-          for(int i=0;i<nbObjet;++i){
-
-              read(file, &filenameSize, sizeof(unsigned int));
-              write(out, &filenameSize, sizeof(unsigned int));
-
-                for (unsigned int j = 0; j < filenameSize; j++){
-                    read(file, &filename, sizeof(char));
-                    write(out, &filename, sizeof(char));
-                }
-
-                read(file,&frames,sizeof(unsigned int));
-                write(out,&frames,sizeof(unsigned int));
-                read(file,&solidity,sizeof(unsigned int));
-                write(out,&solidity,sizeof(unsigned int));
-                read(file,&destructible,sizeof(unsigned int));
-                write(out,&destructible,sizeof(unsigned int));
-                read(file,&collectible,sizeof(unsigned int));
-                write(out,&collectible,sizeof(unsigned int));
-                read(file,&generator,sizeof(unsigned int));
-                write(out,&generator,sizeof(unsigned int));
-              }
-  //ajouter nouvel objet
-
-
-
-
-          for( int i = 0; i < 6 ;i+=6){
-              unsigned int newsize=strlen(argv[3+i]);
-
-            write(out, &newsize,sizeof(unsigned int));
-
-            char * c=argv[3+i];
+            write(file, &newsize,sizeof(unsigned int));
+            printf("%u\n",newsize);
+            char * c=argv[3*(i+1)];
 
             for(int j=0;j<newsize;j++){
-                write(out,c[j],sizeof(char));
-                printf("%c\n",c[j]);
+                write(file,&c[j],sizeof(char));
+		printf("%c\n",c[j]);
+                
             }
-
-            unsigned int nframes = atoi(argv[4 + i]);
+            unsigned int nframes = atoi(argv[4 * (i+1)]);
+            write(file, &nframes, sizeof(unsigned int));
             unsigned int nsolidity;
-            char * ctab =argv[5 + i];
+            char * ctab =argv[5 * (i+1)];
             if(strcmp(ctab,"air")==0){
               nsolidity=0;
             }
@@ -284,42 +235,43 @@ void replace_objects( int argc, char* argv[],int file){
             if(strcmp(ctab,"liquid")==0){
               nsolidity=3;
             }
-            ctab =argv[6 + i];
+            write(file, &nsolidity, sizeof(unsigned int));
+           
+            ctab =argv[6 *(i+1)];
             unsigned int ndestructible;
-            if(strcmp(c,"not-destructible")==0){
-              nsolidity=0;
+            if(strcmp(ctab,"not-destructible")==0){
+              ndestructible=0;
             }
             if(strcmp(ctab,"destructible")==0){
-              nsolidity=1;
+              ndestructible=1;
             }
+            write(file, &ndestructible, sizeof(unsigned int));
+            
             unsigned int ncollectible ;
-            ctab=argv[7 + i];
-            if(strcmp(c,"not-collectible")==0){
+            ctab=argv[7 * (i+1)];
+            if(strcmp(ctab,"not-collectible")==0){
               ncollectible=0;
             }
             if(strcmp(ctab,"collectible")==0){
               ncollectible=1;
-            }
+            }write(file, &ncollectible, sizeof(unsigned int));
+           
             unsigned int ngenerator ;
-            ctab=argv[8+i];
-            if(strcmp(c,"not-generator")==0){
+            ctab=argv[8*(i+1)];
+            if(strcmp(ctab,"not-generator")==0){
               ngenerator=0;
             }
             if(strcmp(ctab,"generator")==0){
               ngenerator=1;
             }
-            write(out, &nframes, sizeof(unsigned int));
-            write(out, &nsolidity, sizeof(unsigned int));
-            write(out, &ndestructible, sizeof(unsigned int));
-            write(out, &ncollectible, sizeof(unsigned int));
-            write(out, &ngenerator, sizeof(unsigned int));
+           
+            write(file, &ngenerator, sizeof(unsigned int));
             nbObjet++;
+	    x++;
           }
-          printf("je suis la \n");
-          lseek(out,sizeof(unsigned int)*2,SEEK_SET);
-        	write(out,&nbObjet,sizeof(unsigned int));
-          close(file);
-          close(out);
+          lseek(file,sizeof(unsigned int)*2,SEEK_SET);
+        	write(file,&nbObjet,sizeof(unsigned int));
+
 
 
 }

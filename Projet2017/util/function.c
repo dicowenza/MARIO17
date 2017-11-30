@@ -24,11 +24,11 @@ void copyWrite(int src,int dst,int count,void * buf){
 
 
 void copyEndFile(int src,int dst,unsigned int frames ,unsigned int solidity,unsigned int destructible , unsigned int collectible , unsigned int generator ){
-  copyWrite(src,dst,sizeof(unsigned int),frames);
-  copyWrite(src,dst,sizeof(unsigned int),solidity);
-  copyWrite(src,dst,sizeof(unsigned int),destructible);
-  copyWrite(src,dst,sizeof(unsigned int),collectible);
-  copyWrite(src,dst,sizeof(unsigned int),generator);
+  copyWrite(src,dst,sizeof(unsigned int),&frames);
+  copyWrite(src,dst,sizeof(unsigned int),&solidity);
+  copyWrite(src,dst,sizeof(unsigned int),&destructible);
+  copyWrite(src,dst,sizeof(unsigned int),&collectible);
+  copyWrite(src,dst,sizeof(unsigned int),&generator);
 }
 
 
@@ -109,7 +109,7 @@ void setWidth(int file,unsigned int width){
       write(temp,&car,sizeof(char));
     }
     write(temp,'\0',sizeof(char));
-    unsigned int frames , solidity , destructible,collectible,generator;
+    unsigned int frames=0 , solidity=0, destructible=0,collectible=0,generator=0;
     copyEndFile(file,temp,frames,solidity,destructible,collectible,generator);
 
   }
@@ -169,7 +169,7 @@ void setHeight(int file,unsigned int height){
 
       }
       write(temp,'\0',sizeof(char));
-      unsigned int frames , solidity , destructible,collectible,generator;
+      unsigned int frames=0, solidity=0 , destructible=0,collectible=0,generator=0;
       copyEndFile(file,temp,frames,solidity,destructible,collectible,generator);
 
     }

@@ -11,6 +11,6 @@ void copyWrite(int src,int dst,int count,void * buf);
 void setWidth(int file,unsigned int width);
 void setHeight(int file,unsigned int height);
 
-void replace_objects(int argc, char* argv[],int file);
+void replace_objects(int argc, char* argv[]);
 void pruneObjects(int file);
 #endif

@@ -51,7 +51,7 @@ void main(int argc,char ** argv){
 	  }
 		if(strcmp(c,"--setobjects")==0){
 
-		   replace_objects(argc,argv,file);
+		   replace_objects(argc,argv);
 		  }
 
 }

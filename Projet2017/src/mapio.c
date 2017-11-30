@@ -161,7 +161,7 @@ void map_load (char *filename)
      reader(load, &height   , sizeof(unsigned int));
      reader(load, &nbObjects, sizeof(unsigned int));
   
-     if ( width < MIN_WIDTH || width > MAX_WIDTH || height < MIN_HEIGHT || height > MAX_HEIGHT|| nbObjects < 0 || nbObjects > MAP_MAX_OBJECTS )
+     if ( width < MAP_MIN_WIDTH || width > MAP_MAX_WIDTH || height < MAP_MIN_HEIGHT || height > MAP_MAX_HEIGHT|| nbObjects < 0 || nbObjects > MAP_MAX_OBJECTS )
       invalidMap();       
      
 	/* on crée la carte avec les dimensions récupérées*/

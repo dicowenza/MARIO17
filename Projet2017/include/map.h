@@ -7,10 +7,10 @@
 
 #define MAP_OBJECT_NONE -1
 
-#define MIN_HEIGHT 12
-#define MAX_HEIGHT 20
-#define MIN_WIDTH  16
-#define MAX_WIDTH  1024
+#define MAP_MIN_HEIGHT 12
+#define MAP_MAX_HEIGHT 20
+#define MAP_MIN_WIDTH  16
+#define MAP_MAX_WIDTH  1024
 
 #define MAP_OBJECT_AIR           0
 #define MAP_OBJECT_SEMI_SOLID    (1UL << 0)

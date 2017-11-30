@@ -186,24 +186,22 @@ void replace_objects( int argc, char* argv[],int file){
 		;
           for( int i =0; i<object_add*6 ;i=i+6){
 		
-              unsigned int newsize=strlen(argv[3+i]);
+            unsigned int newsize=strlen(argv[3+i]);
 
             write(file, &newsize,sizeof(unsigned int));
  
             char * c=argv[3+i];
 
             for(int j=0;j<newsize;j++){
-                write(file,&c[j],sizeof(char));
-	
-                
+                write(file,&c[j],sizeof(char));    
             }
             unsigned int nframes = atoi(argv[4 +i]);
             write(file, &nframes, sizeof(unsigned int));
 
-            unsigned int nsolidity;
+            
 
             char * ctab =argv[5+i];
-
+            unsigned int nsolidity;
             if(strcmp(ctab,"air")==0){
               nsolidity=0;
             }

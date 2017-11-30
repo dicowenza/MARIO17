@@ -205,24 +205,24 @@ void replace_objects( int argc, char* argv[],int file){
           unsigned int nbObjet=getNbObject(file);
           unsigned int object_add=(argc-3)/6;
           lseek(file,0,SEEK_END);
+		;
+          for( int i =0; i<object_add*6 ;i=i+6){
 		
-          for( int i =0; i<object_add ;i++){
-		
-              unsigned int newsize=strlen(argv[3*(i+1+x)]);
+              unsigned int newsize=strlen(argv[3+i]);
 
             write(file, &newsize,sizeof(unsigned int));
             printf("%u\n",newsize);
-            char * c=argv[3*(i+1)];
+            char * c=argv[3+i];
 
             for(int j=0;j<newsize;j++){
                 write(file,&c[j],sizeof(char));
 		printf("%c\n",c[j]);
                 
             }
-            unsigned int nframes = atoi(argv[4 * (i+1)]);
+            unsigned int nframes = atoi(argv[4 +i]);
             write(file, &nframes, sizeof(unsigned int));
             unsigned int nsolidity;
-            char * ctab =argv[5 * (i+1)];
+            char * ctab =argv[5+i];
             if(strcmp(ctab,"air")==0){
               nsolidity=0;
             }
@@ -237,7 +237,7 @@ void replace_objects( int argc, char* argv[],int file){
             }
             write(file, &nsolidity, sizeof(unsigned int));
            
-            ctab =argv[6 *(i+1)];
+            ctab =argv[6+i];
             unsigned int ndestructible;
             if(strcmp(ctab,"not-destructible")==0){
               ndestructible=0;
@@ -248,7 +248,7 @@ void replace_objects( int argc, char* argv[],int file){
             write(file, &ndestructible, sizeof(unsigned int));
             
             unsigned int ncollectible ;
-            ctab=argv[7 * (i+1)];
+            ctab=argv[7 +i];
             if(strcmp(ctab,"not-collectible")==0){
               ncollectible=0;
             }
@@ -257,7 +257,7 @@ void replace_objects( int argc, char* argv[],int file){
             }write(file, &ncollectible, sizeof(unsigned int));
            
             unsigned int ngenerator ;
-            ctab=argv[8*(i+1)];
+            ctab=argv[8+i];
             if(strcmp(ctab,"not-generator")==0){
               ngenerator=0;
             }
@@ -267,7 +267,6 @@ void replace_objects( int argc, char* argv[],int file){
            
             write(file, &ngenerator, sizeof(unsigned int));
             nbObjet++;
-	    x++;
           }
           lseek(file,sizeof(unsigned int)*2,SEEK_SET);
         	write(file,&nbObjet,sizeof(unsigned int));

@@ -33,6 +33,10 @@ int main(int argc,char ** argv){
 	       fprintf(stderr," 4 paramètres nécessaire pour setWidth");
 	    
 	    unsigned int a=atoi(argv[3]);
+	    if(a < 16 || a > 1024){
+			printf("La largeur doit etre comprise entre 16 et 1024\n");
+			exit(1);
+		}
 	    setWidth(file,a);
 	  }
 
@@ -41,6 +45,10 @@ int main(int argc,char ** argv){
 	       fprintf(stderr," 4 paramètres nécessaire pour setheight");
 	 
 	    unsigned int a=atoi(argv[3]);
+	    if(a < 12 || a > 20){
+			printf("La hauteur doit etre comprise entre 12 et 20\n");
+			exit(1);
+		}
 	    setHeight(file,a);
 	  }
 
